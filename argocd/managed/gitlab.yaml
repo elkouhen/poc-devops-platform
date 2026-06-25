@@ -76,10 +76,29 @@ spec:
           enabled: false
         gitlab-pages:
           enabled: false
+        # Le tag MinIO embarqué par le chart GitLab est très ancien et tire
+        # une image non compatible arm64 sur Apple Silicon (exec format error).
+        minio:
+          image: quay.io/minio/minio
+          imageTag: RELEASE.2024-01-16T16-07-38Z
+          minioMc:
+            image: quay.io/minio/mc
+            tag: RELEASE.2024-01-13T08-44-48Z
         gitlab:
           webservice:
             minReplicas: 1
             maxReplicas: 1
+            resources:
+              requests:
+                cpu: 150m
+                memory: 1200Mi
+              limits:
+                memory: 2500Mi
+            workhorse:
+              resources:
+                requests:
+                  cpu: 50m
+                  memory: 64Mi
           sidekiq:
             minReplicas: 1
             maxReplicas: 1
