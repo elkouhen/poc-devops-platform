@@ -41,10 +41,10 @@ que la première implémentation.
 
 ## Objectif du scaling
 
-Ajouter une app au pattern doit se résumer à ajouter une entrée dans un
-inventaire déclaratif, pas à dupliquer des fichiers ou de la logique
-CI/GitOps. Le mécanisme qui réalise cet objectif (repo `ci-templates`,
-inventaire `argocd/apps.yaml`, `ApplicationSet` ArgoCD, `gitlab-seed.sh`
+Ajouter une app au pattern doit se résumer à ajouter un fichier d'app dans un
+inventaire déclaratif, pas à dupliquer de la logique CI/GitOps. Le mécanisme
+qui réalise cet objectif (repo `ci-templates`, index `argocd/apps.yaml`,
+fichiers `argocd/apps/*.yaml`, `ApplicationSet` ArgoCD, `gitlab-seed.sh`
 généralisé) est détaillé dans la spec technique.
 
 ## Expérience utilisateur cible
@@ -58,8 +58,8 @@ déployable sans duplication de pipeline.
 
 Critères d'acceptation du POC :
 
-- **Peu d'étapes** : après ajout des sources locales et de l'entrée dans
-  `argocd/apps.yaml`, une commande de seed/rendu doit suffire à préparer
+- **Peu d'étapes** : après ajout des sources locales et du fichier
+  `argocd/apps/<app>.yaml`, une commande de seed/rendu doit suffire à préparer
   GitLab et ArgoCD.
 - **Aucune création manuelle** dans GitLab, ArgoCD ou Kubernetes pour une app
   standard.

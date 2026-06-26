@@ -108,13 +108,13 @@ sous-dossier avec son propre `Dockerfile`.
   le cas single-service.
 
 **Statut : implémenté.** Détail de l'implémentation (`helloworld-svc`/
-`helloworld-gui`, schéma `argocd/apps.yaml`, `gitlab-seed.sh`,
+`helloworld-gui`, schéma `argocd/apps.yaml` + `argocd/apps/*.yaml`, `gitlab-seed.sh`,
 `ci-templates/gitlab-ci.yml`) dans la spec technique.
 
 ## Scaling : pattern réplicable pour plusieurs apps
 
 Cf. "Objectif du scaling" dans le [PRD](./prd.md) pour le pourquoi. Le
-mécanisme (repo `ci-templates`, inventaire `argocd/apps.yaml`,
+mécanisme (repo `ci-templates`, inventaire `argocd/apps.yaml` + `argocd/apps/*.yaml`,
 `ApplicationSet` ArgoCD, `gitlab-seed.sh` généralisé) est détaillé dans la
 spec technique.
 

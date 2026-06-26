@@ -69,7 +69,7 @@ gitlab-status: ## Affiche l'etat GitLab
 gitlab-runner-token: ## Cree le Secret K8s du token runner
 	GITLAB_NAMESPACE=$(GITLAB_NAMESPACE) GITLAB_URL=http://gitlab.$(GITLAB_DOMAIN) python3 ./scripts/gitlab-runner-token.py
 
-gitlab-seed: ## Cree/seed les projets GitLab declares dans argocd/apps.yaml
+gitlab-seed: ## Cree/seed les projets GitLab declares dans l'inventaire apps
 	GITLAB_NAMESPACE=$(GITLAB_NAMESPACE) GITLAB_URL=http://gitlab.$(GITLAB_DOMAIN) python3 ./scripts/gitlab-seed.py
 
 registry-wait: ## Attend que le registry soit pret
@@ -83,7 +83,7 @@ registry-url: ## Affiche l'URL du registry
 argocd-repo-creds: ## Cree les credentials ArgoCD pour les repos manifests prives
 	GITLAB_NAMESPACE=$(GITLAB_NAMESPACE) GITLAB_URL=http://gitlab.$(GITLAB_DOMAIN) ARGOCD_NAMESPACE=$(ARGOCD_NAMESPACE) python3 ./scripts/argocd-repo-creds.py
 
-argocd-apps-render: ## Regenere l'ApplicationSet depuis argocd/apps.yaml
+argocd-apps-render: ## Regenere l'ApplicationSet depuis l'inventaire apps
 	python3 ./scripts/render-argocd-apps.py > argocd/managed/apps-appset.yaml
 
 init-project: ## Ajoute/met a jour une app: make init-project CODE_REPO=../app IAC_REPO=../app-iac
