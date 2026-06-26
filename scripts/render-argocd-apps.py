@@ -57,6 +57,7 @@ applicationset = {
         "template": {
             "metadata": {
                 "name": "{{ .app }}-{{ .env }}",
+                "namespace": "argocd",
                 "finalizers": ["resources-finalizer.argocd.argoproj.io"],
             },
             "spec": {

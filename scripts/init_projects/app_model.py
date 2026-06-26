@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from .config import InitProjectConfig
+from .config import InitProjectConfig, _is_git_url
 
 
 def build_app(config: InitProjectConfig) -> dict:
-    return {
+    app: dict = {
         "name": config.app_name,
         "hasPreprod": config.has_preprod,
         "services": config.services,
@@ -12,3 +12,8 @@ def build_app(config: InitProjectConfig) -> dict:
             "path": config.kustomize_path,
         },
     }
+    if _is_git_url(config.code_ref):
+        app["code"] = {"repoURL": config.code_ref}
+    if _is_git_url(config.iac_ref):
+        app["manifests"]["repoURL"] = config.iac_ref
+    return app
