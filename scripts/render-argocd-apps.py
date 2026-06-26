@@ -39,7 +39,7 @@ elements = [
         "env": env["name"],
         "branch": env["branch"],
         "namespace": env["namespace"],
-        "repoURL": app["manifests"]["repoURL"],
+        "repoURL": app["manifests"]["argocdRepoURL"],
         "path": app["manifests"]["path"],
     }
     for app in apps

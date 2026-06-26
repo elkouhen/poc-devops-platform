@@ -66,14 +66,17 @@ def _normalize_app(app: dict, inventory: dict, pconst: dict) -> dict:
             for s in raw_services
         ]
 
-    # manifests: derive missing fields
+    # manifests: projectPath and projectName derived from name
     manifests = dict(app.get("manifests", {}))
     if "projectPath" not in manifests:
         manifests["projectPath"] = f"{_GITLAB_ROOT_NAMESPACE}/{name}-iac"
     if "projectName" not in manifests:
         manifests["projectName"] = f"{name}-iac"
+    # repoURL (user-facing, external GitLab or source repo) derived if absent
     if "repoURL" not in manifests:
-        manifests["repoURL"] = f"http://{gitlab_host}/{manifests['projectPath']}.git"
+        manifests["repoURL"] = f"http://gitlab.{domain}/{manifests['projectPath']}.git"
+    # argocdRepoURL: always the in-cluster GitLab URL, never stored in inventory
+    manifests["argocdRepoURL"] = f"http://{gitlab_host}/{manifests['projectPath']}.git"
     if "localPath" not in manifests:
         manifests["localPath"] = f"../{name}-iac"
     if "mainPushAccessLevel" not in manifests:
@@ -82,7 +85,7 @@ def _normalize_app(app: dict, inventory: dict, pconst: dict) -> dict:
         manifests["argocdSecretName"] = f"gitlab-{name}-iac-repo"
     app["manifests"] = manifests
 
-    # code: derive missing fields
+    # code: repoURL (user-facing, external GitLab) and localPath derived if absent
     code = dict(app.get("code", {}))
     if "projectPath" not in code:
         code["projectPath"] = f"{_GITLAB_ROOT_NAMESPACE}/{name}"
@@ -132,11 +135,11 @@ def _normalize_app(app: dict, inventory: dict, pconst: dict) -> dict:
             svc_names[0] if svc_names else "",
         )
 
-    # argocd: derive if absent
+    # argocd: derive if absent — uses argocdRepoURL for in-cluster access
     if "argocd" not in app:
         app["argocd"] = {
             "project": name,
-            "sourceRepos": [manifests["repoURL"]],
+            "sourceRepos": [manifests["argocdRepoURL"]],
             "destinations": [
                 {
                     "server": "https://kubernetes.default.svc",

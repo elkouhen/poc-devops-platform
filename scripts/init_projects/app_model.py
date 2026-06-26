@@ -12,6 +12,8 @@ def build_app(config: InitProjectConfig) -> dict:
             "path": config.kustomize_path,
         },
     }
+    # Stocker les URLs sources uniquement quand elles sont explicites (URL git passée en argument).
+    # Les URLs GitLab de la plateforme sont dérivées par convention dans _normalize_app.
     if _is_git_url(config.code_ref):
         app["code"] = {"repoURL": config.code_ref}
     if _is_git_url(config.iac_ref):

@@ -84,7 +84,7 @@ for app in inventory["apps"]:
     manifests = app["manifests"]
     app_name = app["name"]
     secret_name = manifests["argocdSecretName"]
-    repo_url = manifests["repoURL"]
+    repo_url = manifests["argocdRepoURL"]
 
     if kube_get(ARGOCD_NAMESPACE, "secret", secret_name):
         print(f"Secret '{secret_name}' déjà présent dans '{ARGOCD_NAMESPACE}', rien à faire.")
