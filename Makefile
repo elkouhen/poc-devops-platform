@@ -1,5 +1,5 @@
 ARGOCD_NAMESPACE  ?= argocd
-ARGOCD_VERSION    ?= stable
+ARGOCD_VERSION    ?= v3.4.4
 ARGOCD_INSTALL_URL = https://raw.githubusercontent.com/argoproj/argo-cd/$(ARGOCD_VERSION)/manifests/install.yaml
 ARGOCD_INSTALL_FILTER = scripts/filter-argocd-install.py
 GITLAB_NAMESPACE  ?= gitlab
@@ -9,7 +9,7 @@ REGISTRY_HOSTNAME  = registry.registry.svc.cluster.local
 REGISTRY_HOST      = $(REGISTRY_HOSTNAME):5000
 CORPORATE_CA_LABEL ?= Zscaler
 
-.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-runner-token registry-wait registry-url argocd-apps-render init-project helloworld-status status
+.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-runner-token registry-wait registry-url argocd-apps-render check-generated init-project helloworld-status status
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-22s\033[0m %s\n", $$1, $$2}'
@@ -79,6 +79,16 @@ registry-url: ## Affiche l'URL du registry
 
 argocd-apps-render: ## Regenere l'ApplicationSet depuis l'inventaire apps
 	python3 ./scripts/render-argocd-apps.py > argocd/managed/apps-appset.yaml
+
+check-generated: ## Verifie que les manifests generes sont a jour
+	@tmpfile=$$(mktemp); \
+	python3 ./scripts/render-argocd-apps.py > $$tmpfile; \
+	if ! cmp -s $$tmpfile argocd/managed/apps-appset.yaml; then \
+	  echo "argocd/managed/apps-appset.yaml n'est pas a jour. Lancez: make argocd-apps-render" >&2; \
+	  rm -f $$tmpfile; \
+	  exit 1; \
+	fi; \
+	rm -f $$tmpfile
 
 init-project: ## Ajoute/met a jour une app: make init-project CODE_REPO=<url-ou-chemin> IAC_REPO=<url-ou-chemin>
 	@test -n "$(CODE_REPO)" || (echo "CODE_REPO est requis" >&2; exit 1)
