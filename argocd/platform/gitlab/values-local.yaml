@@ -18,12 +18,17 @@ global:
     bootsnap:
       enabled: false
   appConfig:
+    object_store:
+      enabled: true
+      proxy_download: true
     defaultProjectsFeatures:
       containerRegistry: false
     lfs:
       enabled: false
     artifacts:
-      enabled: false
+      enabled: true
+      proxy_download: true
+      bucket: gitlab-artifacts
     uploads:
       enabled: false
     packages:
