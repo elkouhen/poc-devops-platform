@@ -13,12 +13,12 @@ GITOPS_REPO_ROOT   ?= ../platform-gitops
 GITOPS_APPS_FILE   = $(GITOPS_REPO_ROOT)/argocd/apps.yaml
 GITOPS_APPSET_FILE = $(GITOPS_REPO_ROOT)/argocd/managed/apps-appset.yaml
 
-.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-runner-token registry-wait registry-url argocd-apps-render check-generated init-project helloworld-status status
+.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-dex-oauth-app gitlab-runner-token registry-wait registry-url argocd-apps-render check-generated init-project helloworld-status status
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-22s\033[0m %s\n", $$1, $$2}'
 
-bootstrap: argocd-install argocd-wait argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-bootstrap argocd-ingress gitlab-wait gitlab-runner-token registry-wait ## Deploie la plateforme sur le contexte Kubernetes courant, sans creer de cluster
+bootstrap: argocd-install argocd-wait argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-bootstrap argocd-ingress gitlab-wait gitlab-dex-oauth-app gitlab-runner-token registry-wait ## Deploie la plateforme sur le contexte Kubernetes courant, sans creer de cluster
 	@echo ""
 	@echo "Plateforme prete."
 	@echo "GitLab  : https://gitlab.$(GITLAB_DOMAIN)  (root / make gitlab-password)"
@@ -87,6 +87,10 @@ gitlab-url: ## Affiche l'URL GitLab
 gitlab-status: ## Affiche l'etat GitLab
 	@kubectl -n $(ARGOCD_NAMESPACE) get application gitlab gitlab-routes
 	@kubectl -n $(GITLAB_NAMESPACE) get pods
+
+gitlab-dex-oauth-app: ## Cree l'application OAuth GitLab pour Dex et renseigne argocd-secret
+	@echo "==> platform-cicd: gitlab-dex-oauth-app"
+	GITLAB_NAMESPACE=$(GITLAB_NAMESPACE) ARGOCD_NAMESPACE=$(ARGOCD_NAMESPACE) GITLAB_URL=https://gitlab.$(GITLAB_DOMAIN) ARGOCD_URL=https://argocd.$(GITLAB_DOMAIN) python3 ./scripts/gitlab-dex-oauth-app.py
 
 gitlab-runner-token: ## Cree le Secret K8s du token runner
 	@echo "==> platform-cicd: gitlab-runner-token"
