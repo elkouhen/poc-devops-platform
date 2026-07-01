@@ -9,6 +9,8 @@ effectué, ArgoCD gère la plateforme en continu depuis `platform-gitops`.
 ## Prérequis
 
 - `kubectl` dans le PATH avec un kubeconfig valide pointant sur le cluster cible.
+- `ansible-playbook` dans le PATH (étapes ArgoCD/Flux du bootstrap, cf.
+  `ansible/`).
 - Le cluster doit avoir été provisionné par `cluster` (Traefik, Gateway API,
   MetalLB actifs).
 
@@ -41,6 +43,17 @@ make status                 # État des Applications ArgoCD
 | `scripts/gitlab-tf-credentials.py` | Crée le PAT GitLab et le Secret K8s consommés par Terraform |
 | `scripts/gitlab-dex-oauth-app.py` | Configure SSO GitLab → Dex → ArgoCD |
 | `scripts/gitlab-runner-token.py` | Crée le Secret K8s du token runner |
+| `ansible/playbook.yml` | Étapes ArgoCD/Flux du bootstrap (`argocd-install`, `argocd-bootstrap`, `argocd-ingress`, `flux-sops-age`), sélectionnées via `--tags` depuis le Makefile |
+| `ansible/roles/argocd_trust_ca/` | Rôle paramétré (déploiement, ConfigMap, patch, commande d'extraction du certificat additionnel) réutilisé par `argocd-trust-corporate-ca` et `argocd-trust-local-gateway-ca` |
+
+## Ordre de préférence pour le déploiement
+
+Cf. la règle générale dans `control-plane/AGENTS.md` : ressource TF/Kubernetes
+déclarative d'abord, sinon Ansible, et Make seulement en dernier recours comme
+point d'entrée/enchaînement. C'est pourquoi les étapes de bootstrap
+ArgoCD/Flux (autrefois du shell brut dans le Makefile) vivent maintenant dans
+`ansible/` — le Makefile ne fait plus qu'appeler `ansible-playbook --tags
+<étape>`.
 
 ## Règles critiques
 

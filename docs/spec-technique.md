@@ -17,6 +17,9 @@ scripts/
   gitlab-dex-oauth-app.py    Crée l'app OAuth GitLab pour Dex
   gitlab-runner-token.py     Crée le token runner et le Secret K8s
   init-project.py            Déprécié : onboarding app manuel sous argocd/apps/<app>/
+ansible/
+  playbook.yml                Étapes ArgoCD/Flux du bootstrap, sélectionnées via --tags
+  roles/argocd_trust_ca/      Rôle paramétré, réutilisé par argocd-trust-corporate-ca et argocd-trust-local-gateway-ca
 Makefile
 requirements.txt             pyyaml
 ```
@@ -55,6 +58,34 @@ supporte :
 Les étapes `*-wait` globales ne font pas partie de la séquence : les prérequis
 sont vérifiés au plus près de l'action qui en dépend.
 
+## `ansible/` — étapes de bootstrap ArgoCD/Flux
+
+Les étapes du bootstrap qui manipulent l'état du cluster (namespace, CA
+bundle, ConfigMap, patch, rollout) sont exprimées en tâches Ansible plutôt
+qu'en shell brut dans le Makefile — cf. la règle d'ordre de préférence dans
+`AGENTS.md` (TF/K8s déclaratif, puis Ansible, Make en dernier recours). Chaque
+cible Makefile devenue concernée n'est plus qu'un appel à `ansible-playbook
+playbook.yml --tags <étape>` :
+
+- `argocd-install` : namespace ArgoCD + manifest filtré (`server-side apply`).
+- `argocd-bootstrap` : attente du CRD `Application` puis application de
+  `argocd/root-app.yaml`.
+- `argocd-ingress` : bascule `server.insecure=true` et redémarrage conditionnel.
+- `flux-sops-age` : vérifie la clé age locale, crée le namespace `flux-system`
+  et le Secret `sops-age`.
+- `argocd-trust-corporate-ca` / `argocd-trust-local-gateway-ca` : instances du
+  rôle `argocd_trust_ca`, paramétrées par le déploiement ciblé
+  (`argocd-repo-server` / `argocd-dex-server`), le fichier de patch et la
+  commande shell qui produit le certificat additionnel (trousseau macOS pour
+  le CA corporate, Secret `nip-io-wildcard-tls` pour le CA de la Gateway
+  locale). Le rôle attend le rollout, extrait le bundle CA du pod, fusionne
+  avec le certificat additionnel, recrée le ConfigMap, patche le déploiement
+  puis attend de nouveau le rollout.
+
+Les étapes GitLab (`gitlab-tf-credentials`, `gitlab-dex-oauth-app`,
+`gitlab-runner-token`) restent des scripts Python : elles gèrent déjà leur
+propre polling/idempotence contre l'API GitLab et n'ont pas été migrées.
+
 ## `gitlab-dex-oauth-app.py` — OAuth GitLab → Dex
 
 1. Vérifie l'idempotence : `argocd-secret` contient-il déjà `dex.gitlab.clientID` ?
@@ -89,5 +120,8 @@ sont vérifiés au plus près de l'action qui en dépend.
 
 - `kubectl` avec kubeconfig valide (cluster-admin pour le bootstrap).
 - `python3` avec `pyyaml` (`pip install -r requirements.txt`).
-- `security` (macOS) pour extraire le CA Zscaler du trousseau système.
+- `ansible-playbook` (collection `ansible.builtin` uniquement, aucune
+  collection externe requise).
+- `security` (macOS) pour extraire le CA Zscaler du trousseau système, appelé
+  depuis le rôle Ansible `argocd_trust_ca`.
 - Accès réseau au cluster Kubernetes.
