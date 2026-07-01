@@ -19,6 +19,7 @@ make bootstrap              # Bootstrap complet (ArgoCD + GitLab + registry)
 make argocd-install         # Installer ArgoCD seul
 make argocd-password        # Afficher le mot de passe admin initial
 make gitlab-password        # Afficher le mot de passe root initial
+make gitlab-tf-credentials  # Créer le PAT/Secret GitLab consommé par Terraform
 make gitlab-dex-oauth-app   # Créer l'app OAuth GitLab pour Dex (SSO ArgoCD)
 make gitlab-runner-token    # Créer le token runner GitLab
 make argocd-apps-render     # Générer argocd/generated/apps/* depuis app.yaml
@@ -36,6 +37,7 @@ make status                 # État des Applications ArgoCD
 | `scripts/platform_inventory.py` | Modèle de données historique partagé avec `toolbox` |
 | `scripts/render-argocd-apps.py` | Génère `platform-gitops/argocd/generated/apps/*` depuis `argocd/apps/<app>/app.yaml` |
 | `scripts/filter-argocd-install.py` | Filtre le manifest ArgoCD (retire les notifications) |
+| `scripts/gitlab-tf-credentials.py` | Crée le PAT GitLab et le Secret K8s consommés par Terraform |
 | `scripts/gitlab-dex-oauth-app.py` | Configure SSO GitLab → Dex → ArgoCD |
 | `scripts/gitlab-runner-token.py` | Crée le Secret K8s du token runner |
 

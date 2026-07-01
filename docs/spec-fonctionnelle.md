@@ -17,11 +17,13 @@ atteint avant d'agir. `make bootstrap` exécute dans l'ordre :
 6. **`argocd-ingress`** — Configure ArgoCD en mode HTTP (insecure) pour être
    exposé derrière la Gateway Traefik.
 7. **`gitlab-wait`** — Attend que tous les pods GitLab soient `Ready`.
-8. **`gitlab-dex-oauth-app`** — Crée l'application OAuth GitLab pour Dex et
+8. **`gitlab-tf-credentials`** — Crée/rotate le PAT GitLab
+   `terraform-controller` et le stocke dans le Secret `gitlab-tf-credentials`
+   du namespace `flux-system`, consommé par `Terraform/gitlab-iac`.
+9. **`gitlab-dex-oauth-app`** — Crée l'application OAuth GitLab pour Dex et
    renseigne `argocd-secret`. Idempotent : ne refait rien si le secret existe.
-9. **`gitlab-runner-token`** — Crée le token runner d'instance et le stocke
+10. **`gitlab-runner-token`** — Crée le token runner d'instance et le stocke
    dans `gitlab-gitlab-runner-secret`. Idempotent.
-10. **`registry-wait`** — Attend que le déploiement `registry` soit `Available`.
 
 ## Ressources applicatives
 

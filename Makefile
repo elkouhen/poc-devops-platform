@@ -12,12 +12,12 @@ GITOPS_APPSET_FILE = $(GITOPS_REPO_ROOT)/argocd/managed/apps-appset.yaml
 FLUX_NAMESPACE    ?= flux-system
 SOPS_AGE_KEY_FILE ?= $(HOME)/.config/sops/age/keys.txt
 
-.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-dex-oauth-app gitlab-runner-token argocd-apps-render check-generated init-project status flux-sops-age
+.PHONY: help bootstrap argocd-install argocd-wait argocd-bootstrap argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-ingress argocd-url argocd-password gitlab-wait gitlab-password gitlab-url gitlab-status gitlab-tf-credentials gitlab-dex-oauth-app gitlab-runner-token argocd-apps-render check-generated init-project status flux-sops-age
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-22s\033[0m %s\n", $$1, $$2}'
 
-bootstrap: argocd-install argocd-wait argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-bootstrap flux-sops-age argocd-ingress gitlab-wait gitlab-dex-oauth-app gitlab-runner-token ## Deploie la plateforme sur le contexte Kubernetes courant, sans creer de cluster
+bootstrap: argocd-install argocd-wait argocd-trust-corporate-ca argocd-trust-local-gateway-ca argocd-bootstrap flux-sops-age argocd-ingress gitlab-wait gitlab-tf-credentials gitlab-dex-oauth-app gitlab-runner-token ## Deploie la plateforme sur le contexte Kubernetes courant, sans creer de cluster
 	@echo ""
 	@echo "Plateforme prete."
 	@echo "GitLab : https://gitlab.$(GITLAB_DOMAIN)  (root / make gitlab-password)"
@@ -86,6 +86,10 @@ gitlab-url: ## Affiche l'URL GitLab
 gitlab-status: ## Affiche l'etat GitLab
 	@kubectl -n $(ARGOCD_NAMESPACE) get application gitlab gitlab-routes
 	@kubectl -n $(GITLAB_NAMESPACE) get pods
+
+gitlab-tf-credentials: ## Cree le PAT GitLab et le Secret K8s consomme par Terraform
+	@echo "==> platform-cicd: gitlab-tf-credentials"
+	GITLAB_NAMESPACE=$(GITLAB_NAMESPACE) FLUX_NAMESPACE=$(FLUX_NAMESPACE) GITLAB_URL=https://gitlab.$(GITLAB_DOMAIN) python3 ./scripts/gitlab-tf-credentials.py
 
 gitlab-dex-oauth-app: ## Cree l'application OAuth GitLab pour Dex et renseigne argocd-secret
 	@echo "==> platform-cicd: gitlab-dex-oauth-app"
