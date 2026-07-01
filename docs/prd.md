@@ -46,7 +46,10 @@ application :
 Ajouter une application doit se limiter à :
 - créer un dossier `argocd/apps/<app>/` dans `platform-gitops` avec la
   configuration GitOps dédiée ;
-- exécuter `make gitlab-seed` depuis `toolbox`.
+- déclarer les projets GitLab correspondants dans `gitlab-projects-iac`, appliqué
+  par le job Terraform `gitlab-iac` ;
+- laisser les jobs CI/CD applicatifs initialiser le contenu et les variables
+  nécessaires aux pipelines.
 
 Aucune duplication de logique CI, aucune configuration ArgoCD manuelle.
 
