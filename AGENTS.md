@@ -2,9 +2,13 @@
 
 ## Rôle du dépôt
 
-`platform-cicd` bootstrappe et maintient la plateforme sur le cluster Kubernetes :
-ArgoCD, GitLab (chart Helm), registry Docker interne. Une fois le bootstrap
-effectué, ArgoCD gère la plateforme en continu depuis `platform-gitops`.
+`platform-cicd` installe ArgoCD sur le cluster Kubernetes, puis applique le
+root Application "app of apps" qui délègue à ArgoCD le déploiement
+déclaratif de GitLab et des autres add-ons depuis `platform-gitops`. Ce
+dépôt attend ensuite que GitLab soit prêt pour configurer ses credentials
+(PAT Terraform, SSO Dex, token runner) — il ne déploie pas GitLab lui-même.
+Une fois le bootstrap effectué, ArgoCD gère la plateforme en continu depuis
+`platform-gitops`.
 
 ## Prérequis
 
@@ -17,7 +21,7 @@ effectué, ArgoCD gère la plateforme en continu depuis `platform-gitops`.
 ## Commandes principales
 
 ```bash
-make bootstrap              # Bootstrap complet (ArgoCD + GitLab + registry)
+make bootstrap              # Bootstrap complet (ArgoCD, puis attente GitLab + credentials)
 make bootstrap START_AT=gitlab-tf-credentials # Reprendre le bootstrap à une étape
 make argocd-install         # Installer ArgoCD seul
 make argocd-password        # Afficher le mot de passe admin initial

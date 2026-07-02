@@ -11,21 +11,21 @@ autohébergée sur un cluster Kubernetes local. L'objectif est de démontrer un
 pattern reproductible couvrant :
 
 - un cluster Kubernetes local reproductible (`cluster`) ;
-- une plateforme GitOps pilotée par ArgoCD, avec GitLab, un runner CI et un
-  registry Docker internes ;
+- une plateforme GitOps pilotée par ArgoCD, avec GitLab et un runner CI
+  déployés déclarativement depuis `platform-gitops` ;
 - un template CI partagé et versionné (`ci-templates`) utilisable sans
   duplication de logique dans chaque application ;
 - une application de référence (`helloworld`) qui démontre le chemin complet
-  build → registry → manifests → ArgoCD → cluster.
+  build → GHCR → manifests → ArgoCD → cluster.
 
 ## Composants de la plateforme
 
 | Composant | Rôle |
 |-----------|------|
-| **ArgoCD** | GitOps — synchronise le cluster depuis `platform-gitops` |
+| **ArgoCD** | GitOps — synchronise le cluster depuis `platform-gitops`, y compris GitLab lui-même |
 | **GitLab** | Héberge le code source et exécute les pipelines CI/CD |
 | **GitLab Runner** | Exécution des jobs CI dans le cluster (Kubernetes executor) |
-| **Registry Docker** | Stocke les images construites par Kaniko |
+| **GHCR** | Registre d'images externe (`ghcr.io/poc-devops-elkouhen`) où sont poussées les images construites par Kaniko |
 | **Traefik + Gateway API** | Exposition HTTP des services via HTTPRoutes |
 | **MetalLB** | Load balancer bare-metal pour exposer Traefik |
 
@@ -63,7 +63,6 @@ Aucune duplication de logique CI, aucune configuration ArgoCD manuelle, aucune
   cluster vierge, sans configuration applicative préchargée.
 - GitLab est accessible sur `https://gitlab.<domaine>`.
 - ArgoCD est accessible sur `https://argocd.<domaine>` avec SSO GitLab.
-- Le registry est accessible sur `http://registry.<domaine>`.
 - Après onboarding applicatif, un pipeline complet (build → dev → rec → prod)
   s'exécute sans intervention manuelle hormis les gates de promotion.
 

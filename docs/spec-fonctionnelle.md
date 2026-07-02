@@ -57,12 +57,11 @@ L'authentification ArgoCD passe par Dex, qui délègue à GitLab OAuth2 :
 Les credentials OAuth (client ID / secret) sont stockés dans `argocd-secret`
 et renseignés par `gitlab-dex-oauth-app.py`.
 
-## Registry Docker interne
+## Registre d'images (GHCR)
 
-Le registry est déployé par ArgoCD depuis `platform-gitops/argocd/platform/registry/`.
-Il est accessible :
-- **In-cluster** : `registry.registry.svc.cluster.local:5000` (pas de TLS).
-- **Externe** : `http://registry.<domaine>` (via HTTPRoute Traefik).
-
-Les images buildées par Kaniko sont poussées vers l'URL externe, puis tirées
-par Kubernetes via l'URL interne ou externe selon la configuration des Deployments.
+Il n'y a pas de registry Docker interne au cluster. Les images buildées par
+Kaniko sont poussées vers GHCR (`ghcr.io/poc-devops-elkouhen/<app>`, voir
+`control-plane/platform.yml`). Les Deployments applicatifs tirent l'image
+directement depuis GHCR ; le secret de pull (`ghcr-pull-secret`, déployé par
+`control-plane` puis recopié par app via `render-argocd-apps.py`) est
+consommé par les `Deployment` générés dans chaque namespace applicatif.
